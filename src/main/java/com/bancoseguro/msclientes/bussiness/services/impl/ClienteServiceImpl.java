@@ -23,7 +23,8 @@ public class ClienteServiceImpl implements ClienteService{
 
 	@Override
 	public Flux<ClienteRes> getClients() {
-		Flux<Cliente> sourceFlux = servRepo.findAll();
+		//Flux<Cliente> sourceFlux = servRepo.findAll();
+		Flux<Cliente> sourceFlux = servRepo.findAllByIndEliminado(1);
         return ModelMapperUtils.mapToFlux(sourceFlux, ClienteRes.class);
 	}
 
@@ -35,12 +36,30 @@ public class ClienteServiceImpl implements ClienteService{
 
 	@Override
 	public Mono<ClienteRes> postClient(ClienteReq cliente) {
+		/**
+		Mono<Cliente> clienteExistente = servRepo
+				.findByTipoDocumentoAndNumDocumento(cliente.getTipoDocumento(),cliente.getNumDocumento());
 		Cliente nuevoCliente = ModelMapperUtils.map(cliente, Cliente.class);
 		nuevoCliente.setSecCtrl(BankFnUtils.uniqueProductCode());
 		nuevoCliente.setEstado("0");
 		nuevoCliente.setIndEliminado(0);
 		Mono<Cliente> sourceMono = servRepo.save(nuevoCliente);
-		return ModelMapperUtils.mapToMono(sourceMono, ClienteRes.class);
+		// return ModelMapperUtils.mapToMono(sourceMono, ClienteRes.class);
+		 * **/
+		Mono<Object> sourceMono = servRepo.countByTipoDocumentoAndNumDocumento(cliente.getTipoDocumento(), cliente.getNumDocumento())
+		.flatMap(t->{	
+			Cliente nuevoCliente = ModelMapperUtils.map(cliente, Cliente.class);
+			if(t == 0) {
+				System.out.print("Valor " + t);				
+				nuevoCliente.setSecCtrl(BankFnUtils.uniqueProductCode());
+				nuevoCliente.setEstado("0");
+				nuevoCliente.setIndEliminado(0);
+				return servRepo.save(nuevoCliente);
+			}
+			return Mono.just(null);		
+		});
+		return ModelMapperUtils.mapToMono(sourceMono, ClienteRes.class).switchIfEmpty(Mono.just(null));
+		//return 
 	}
 
 	@Override
@@ -72,7 +91,25 @@ public class ClienteServiceImpl implements ClienteService{
 
 	@Override
 	public Mono<ClienteRes> putClientState(String idClient, String stateClient) {
-		return null;
+		Mono<Cliente> sourceMono = servRepo.findById(idClient);		
+		Mono<Cliente> clienteModificado = sourceMono.flatMap(original->{
+			boolean esModificado = false;
+			Cliente nuevoCliente = new Cliente();
+			nuevoCliente = ModelMapperUtils.map(original, Cliente.class);
+			if (!nuevoCliente.getEstado().equalsIgnoreCase(stateClient)) {
+				nuevoCliente.setEstado(stateClient);
+				esModificado = true;
+			}
+			if (esModificado) {
+				return Mono.just(nuevoCliente);
+			}else {
+				return null;
+			}
+		});
+		Mono<Cliente> sourceModificado = clienteModificado.flatMap(modificado->{
+			return servRepo.save(modificado);
+		});
+		return ModelMapperUtils.mapToMono(sourceModificado, ClienteRes.class);
 	}
 
 	@Override
