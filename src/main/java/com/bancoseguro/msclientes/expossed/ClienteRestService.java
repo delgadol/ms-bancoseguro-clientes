@@ -30,7 +30,8 @@ import jakarta.validation.Valid;
 public class ClienteRestService {
 	
 	@Autowired
-	private ClienteService clientService; 
+	private ClienteService clientService;
+	
 	
 	@GetMapping("")
 	public Flux<ClienteRes> getClients(){
@@ -40,32 +41,35 @@ public class ClienteRestService {
 	
 	@GetMapping("/{id}")
 	public Mono<ClienteRes> getClientById(@PathVariable(name = "id") String idClient){
-		return clientService.getClientById(idClient).
-				switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Entidad no procesable")));
+		return clientService.getClientById(idClient)
+				.switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Entidad no procesable")));
 	}
 	
 	
 	@PutMapping("/{id}")
 	public Mono<ClienteRes> putClient(@PathVariable(name="id") String idClient,@Valid @RequestBody ClienteModReq cliente){
-		return clientService.putClient(idClient, cliente).
-				switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Entidad no procesable")));
+		return clientService.putClient(idClient, cliente)
+				.switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Entidad no procesable")));
 	}
 	
 	
 	@PostMapping("")
 	public Mono<ClienteRes> postClient(@Valid @RequestBody ClienteReq cliente){
-		return clientService.postClient(cliente);
+		return clientService.postClient(cliente)
+				.switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Entidad no procesable")));
 	}
 	
 	@DeleteMapping("/{id}")
 	public Mono<ClienteRes> delClient(@PathVariable(name="id") String idClient){
-		return null;
+		return clientService.delClient(idClient)
+				.switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Entidad no procesable")));
 	}
 	
 	
 	@PutMapping("/{id}/estado/{idEstado}")
 	public Mono<ClienteRes> putClientState(@PathVariable(name="id") String idClient, @PathVariable(name="idEstado") String stateClient){
-		return null;
+		return clientService.putClientState(idClient, stateClient)
+				.switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Entidad no procesable")));
 	}
 	
 

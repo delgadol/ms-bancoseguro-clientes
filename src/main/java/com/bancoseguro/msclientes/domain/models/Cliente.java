@@ -1,5 +1,7 @@
 package com.bancoseguro.msclientes.domain.models;
 
+import java.io.Serializable;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -10,8 +12,10 @@ import lombok.Data;
 
 @Data
 @Document("personas")
-public class Cliente {
+public class Cliente  implements Serializable{
 	
+	private static final long serialVersionUID = 3816734689501931947L;
+
 	@Id
 	private String id;
 	

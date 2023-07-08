@@ -2,6 +2,7 @@ package com.bancoseguro.msclientes.bussiness.services.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.bancoseguro.msclientes.bussiness.services.ClienteService;
 import com.bancoseguro.msclientes.domain.dto.req.ClienteModReq;
@@ -16,6 +17,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Service
+@Transactional
 public class ClienteServiceImpl implements ClienteService{
 	
 	@Autowired
@@ -24,7 +26,7 @@ public class ClienteServiceImpl implements ClienteService{
 	@Override
 	public Flux<ClienteRes> getClients() {
 		//Flux<Cliente> sourceFlux = servRepo.findAll();
-		Flux<Cliente> sourceFlux = servRepo.findAllByIndEliminado(1);
+		Flux<Cliente> sourceFlux = servRepo.findAllByIndEliminado(0);
         return ModelMapperUtils.mapToFlux(sourceFlux, ClienteRes.class);
 	}
 
@@ -36,86 +38,69 @@ public class ClienteServiceImpl implements ClienteService{
 
 	@Override
 	public Mono<ClienteRes> postClient(ClienteReq cliente) {
-		/**
-		Mono<Cliente> clienteExistente = servRepo
-				.findByTipoDocumentoAndNumDocumento(cliente.getTipoDocumento(),cliente.getNumDocumento());
-		Cliente nuevoCliente = ModelMapperUtils.map(cliente, Cliente.class);
-		nuevoCliente.setSecCtrl(BankFnUtils.uniqueProductCode());
-		nuevoCliente.setEstado("0");
-		nuevoCliente.setIndEliminado(0);
-		Mono<Cliente> sourceMono = servRepo.save(nuevoCliente);
-		// return ModelMapperUtils.mapToMono(sourceMono, ClienteRes.class);
-		 * **/
-		Mono<Object> sourceMono = servRepo.countByTipoDocumentoAndNumDocumento(cliente.getTipoDocumento(), cliente.getNumDocumento())
-		.flatMap(t->{	
-			Cliente nuevoCliente = ModelMapperUtils.map(cliente, Cliente.class);
-			if(t == 0) {
-				System.out.print("Valor " + t);				
-				nuevoCliente.setSecCtrl(BankFnUtils.uniqueProductCode());
-				nuevoCliente.setEstado("0");
-				nuevoCliente.setIndEliminado(0);
-				return servRepo.save(nuevoCliente);
-			}
-			return Mono.just(null);		
-		});
-		return ModelMapperUtils.mapToMono(sourceMono, ClienteRes.class).switchIfEmpty(Mono.just(null));
-		//return 
+		Mono<Long> clienteExistente = servRepo
+				.countByTipoDocumentoAndNumDocumento(cliente.getTipoDocumento(),cliente.getNumDocumento());
+		
+		Mono<Cliente> sourceMono = clienteExistente
+				.filter(x -> x== 0)
+				.flatMap(t -> {
+					Cliente nuevoCliente = ModelMapperUtils.map(cliente, Cliente.class);
+					nuevoCliente.setSecCtrl(BankFnUtils.uniqueProductCode());
+					nuevoCliente.setEstado("0");
+					nuevoCliente.setIndEliminado(0);
+					return servRepo.save(nuevoCliente);
+				});	
+		
+		return ModelMapperUtils.mapToMono(sourceMono, ClienteRes.class);
 	}
 
 	@Override
 	public Mono<ClienteRes> putClient(String idClient, ClienteModReq cliente) {
-		Mono<Cliente> sourceMono = servRepo.findById(idClient);		
-		Mono<Cliente> clienteModificado = sourceMono.flatMap(original->{
-			boolean esModificado = false;
-			Cliente nuevoCliente = new Cliente();
-			nuevoCliente = ModelMapperUtils.map(original, Cliente.class);
-			if (!nuevoCliente.getNombres().equalsIgnoreCase(cliente.getNombres())) {
-				nuevoCliente.setNombres(cliente.getNombres());
-				esModificado = true;
-			}
-			if (!nuevoCliente.getApellidos().equalsIgnoreCase(cliente.getApellidos())) {
-				nuevoCliente.setApellidos(cliente.getApellidos());
-				esModificado = true;
-			}
-			if (esModificado) {
-				return Mono.just(nuevoCliente);
-			}else {
-				return null;
-			}
-		});
-		Mono<Cliente> sourceModificado = clienteModificado.flatMap(modificado->{
-			return servRepo.save(modificado);
-		});
-		return ModelMapperUtils.mapToMono(sourceModificado, ClienteRes.class);				
+		Mono<Cliente> clienteExistente = servRepo
+				.findFirstByIdAndIndEliminado(idClient,0);
+		
+		Mono<Cliente> clienteModificado = clienteExistente
+				.flatMap( original -> {
+					Cliente nuevoCliente = new Cliente();
+					nuevoCliente = ModelMapperUtils.map(original, Cliente.class);
+					nuevoCliente.setNombres(cliente.getNombres());
+					nuevoCliente.setApellidos(cliente.getApellidos());
+					return servRepo.save(nuevoCliente);
+				});
+		
+		return ModelMapperUtils.mapToMono(clienteModificado, ClienteRes.class);
 	}
 
 	@Override
 	public Mono<ClienteRes> putClientState(String idClient, String stateClient) {
-		Mono<Cliente> sourceMono = servRepo.findById(idClient);		
-		Mono<Cliente> clienteModificado = sourceMono.flatMap(original->{
-			boolean esModificado = false;
-			Cliente nuevoCliente = new Cliente();
-			nuevoCliente = ModelMapperUtils.map(original, Cliente.class);
-			if (!nuevoCliente.getEstado().equalsIgnoreCase(stateClient)) {
-				nuevoCliente.setEstado(stateClient);
-				esModificado = true;
-			}
-			if (esModificado) {
-				return Mono.just(nuevoCliente);
-			}else {
-				return null;
-			}
-		});
-		Mono<Cliente> sourceModificado = clienteModificado.flatMap(modificado->{
-			return servRepo.save(modificado);
-		});
-		return ModelMapperUtils.mapToMono(sourceModificado, ClienteRes.class);
+		Mono<Cliente> clienteExistente = servRepo
+				.findFirstByIdAndIndEliminado(idClient,0);
+		
+		Mono<Cliente> clienteModificado = clienteExistente
+				.flatMap( original -> {
+					Cliente nuevoCliente = new Cliente();
+					nuevoCliente = ModelMapperUtils.map(original, Cliente.class);
+					nuevoCliente.setEstado(stateClient);
+					return servRepo.save(nuevoCliente);
+				});
+		
+		return ModelMapperUtils.mapToMono(clienteModificado, ClienteRes.class);
 	}
 
 	@Override
 	public Mono<ClienteRes> delClient(String idClient) {
-		// TODO Auto-generated method stub
-		return null;
+		Mono<Cliente> clienteExistente = servRepo
+				.findFirstByIdAndIndEliminado(idClient,0);
+		
+		Mono<Cliente> clienteModificado = clienteExistente
+				.flatMap( original -> {
+					Cliente nuevoCliente = new Cliente();
+					nuevoCliente = ModelMapperUtils.map(original, Cliente.class);
+					nuevoCliente.setIndEliminado(1);
+					return servRepo.save(nuevoCliente);
+				});
+		
+		return ModelMapperUtils.mapToMono(clienteModificado, ClienteRes.class);
 	}
 
 }

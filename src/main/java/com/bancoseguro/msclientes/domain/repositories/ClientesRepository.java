@@ -1,6 +1,5 @@
 package com.bancoseguro.msclientes.domain.repositories;
 
-import java.util.List;
 
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 
@@ -16,6 +15,10 @@ public interface ClientesRepository extends ReactiveMongoRepository<Cliente, Str
 	 
 	 Mono<Long> countByTipoDocumentoAndNumDocumento(TipoDocumento tipoDocumento,String numDocumento);
 	 
+	 Mono<Cliente> findFirstByTipoDocumentoAndNumDocumento(TipoDocumento tipoDocumento,String numDocumento);
 	 
+	 Mono<Cliente> findFirstByIdAndIndEliminado(String id,Integer indEliminado);
+	 
+	 Mono<Long> countByIdAndIndEliminado(String id,Integer indEliminado);
 
 }
