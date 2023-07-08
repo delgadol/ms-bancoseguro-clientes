@@ -1,5 +1,6 @@
 package com.bancoseguro.msclientes.domain.models;
 
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.bancoseguro.msclientes.utils.TipoCliente;
@@ -7,10 +8,11 @@ import com.bancoseguro.msclientes.utils.TipoDocumento;
 
 import lombok.Data;
 
-@Document("personas")
 @Data
+@Document("personas")
 public class Cliente {
 	
+	@Id
 	private String id;
 	
 	private String secCtrl;
@@ -19,7 +21,7 @@ public class Cliente {
 	
 	private TipoDocumento tipoDocumento;
 	
-	private String idDocumento;
+	private String numDocumento;
 	
 	private String nombres;
 	

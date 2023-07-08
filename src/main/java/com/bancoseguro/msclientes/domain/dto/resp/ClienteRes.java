@@ -5,6 +5,7 @@ import lombok.Data;
 @Data
 public class ClienteRes {
 	
+
 	private String id;
 	
 	private String nombres;
