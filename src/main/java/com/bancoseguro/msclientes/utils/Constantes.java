@@ -1,8 +1,11 @@
 package com.bancoseguro.msclientes.utils;
 
+import lombok.Data;
+
+@Data
 public class Constantes {
 	
-	public static final Integer INDICADOR_ELIMINADO = 0;
+	public static final Integer NO_ELIMINADO = 0;
 	
 	public static final Integer ESTADO_NORMAL = 0;
 	
