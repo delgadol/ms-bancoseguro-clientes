@@ -10,6 +10,10 @@ import com.bancoseguro.msclientes.utils.TipoDocumento;
 
 import lombok.Data;
 
+/**
+ * Representa un cliente.
+ * La clase Cliente es una entidad que se mapea a la colección "personas" en la base de datos.
+ */
 @Data
 @Document("personas")
 public class Cliente  implements Serializable{

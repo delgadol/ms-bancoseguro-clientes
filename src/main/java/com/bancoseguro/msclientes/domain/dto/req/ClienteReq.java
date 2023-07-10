@@ -9,6 +9,11 @@ import com.bancoseguro.msclientes.utils.TipoCliente;
 
 import lombok.Data;
 
+
+/**
+ * Representa una solicitud de cliente.
+ * La clase ClienteReq es utilizada para enviar información relacionada a un cliente.
+ */
 @Data
 public class ClienteReq {
 	

@@ -23,6 +23,11 @@ public class ClienteServiceImpl implements ClienteService{
 	@Autowired
 	private ClientesRepository servRepo;
 
+	/**
+	 * Obtiene todos los clientes.
+	 *
+	 * @return un Flux que emite objetos ClienteRes correspondientes a todos los clientes
+	 */
 	@Override
 	public Flux<ClienteRes> getClients() {
 		//Flux<Cliente> sourceFlux = servRepo.findAll();
@@ -30,11 +35,25 @@ public class ClienteServiceImpl implements ClienteService{
         return ModelMapperUtils.mapToFlux(sourceFlux, ClienteRes.class);
 	}
 
+	/**
+	 * Obtiene un cliente por su identificador.
+	 *
+	 * @param idClient el identificador del cliente
+	 * @return un Mono que emite el objeto ClienteRes correspondiente al ID proporcionado
+	 */
+
 	@Override
 	public Mono<ClienteRes> getClientById(String idClient) {
 		Mono<Cliente> sourceMono = servRepo.findById(idClient);
 		return ModelMapperUtils.mapToMono(sourceMono, ClienteRes.class);
 	}
+
+	/**
+	 * Crea un nuevo cliente con la información proporcionada.
+	 *
+	 * @param cliente la información del cliente a crear
+	 * @return un Mono que emite el objeto ClienteRes resultante
+	 */
 
 	@Override
 	public Mono<ClienteRes> postClient(ClienteReq cliente) {
@@ -54,6 +73,14 @@ public class ClienteServiceImpl implements ClienteService{
 		return ModelMapperUtils.mapToMono(sourceMono, ClienteRes.class);
 	}
 
+	/**
+	 * Actualiza un cliente existente con la información proporcionada.
+	 *
+	 * @param idClient el identificador del cliente a actualizar
+	 * @param cliente la información actualizada del cliente
+	 * @return un Mono que emite el objeto ClienteRes resultante
+	 */
+
 	@Override
 	public Mono<ClienteRes> putClient(String idClient, ClienteModReq cliente) {
 		Mono<Cliente> clienteExistente = servRepo
@@ -71,6 +98,14 @@ public class ClienteServiceImpl implements ClienteService{
 		return ModelMapperUtils.mapToMono(clienteModificado, ClienteRes.class);
 	}
 
+	/**
+	 * Actualiza el estado de un cliente existente.
+	 *
+	 * @param idClient el identificador del cliente a actualizar
+	 * @param stateClient el estado actualizado del cliente
+	 * @return un Mono que emite el objeto ClienteRes resultante
+	 */
+
 	@Override
 	public Mono<ClienteRes> putClientState(String idClient, String stateClient) {
 		Mono<Cliente> clienteExistente = servRepo
@@ -86,6 +121,13 @@ public class ClienteServiceImpl implements ClienteService{
 		
 		return ModelMapperUtils.mapToMono(clienteModificado, ClienteRes.class);
 	}
+
+	/**
+	 * Elimina un cliente por su identificador.
+	 *
+	 * @param idClient el identificador del cliente a eliminar
+	 * @return un Mono que emite el objeto ClienteRes correspondiente al cliente eliminado
+	 */
 
 	@Override
 	public Mono<ClienteRes> delClient(String idClient) {
